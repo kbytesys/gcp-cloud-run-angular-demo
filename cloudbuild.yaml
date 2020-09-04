@@ -1,0 +1,35 @@
+steps:
+  # build the container image
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["build", "-t", "gcr.io/$PROJECT_ID/${_APPNAME}", "."]
+  # push the container image to Container Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "gcr.io/$PROJECT_ID/${_APPNAME}"]
+  # Deploy container image to Cloud Run
+  - name: "gcr.io/cloud-builders/gcloud"
+    args:
+      [
+        "beta",
+        "run",
+        "deploy",
+        "--allow-unauthenticated",
+        "$PROJECT_ID",
+        "--image",
+        "gcr.io/$PROJECT_ID/${_APPNAME}",
+        "--region",
+        "${_GCPZONE}",
+        "--platform",
+        "managed",
+        "--memory",
+        "128Mi",
+        "--port",
+        "80"
+      ]
+
+substitutions:
+  _APPNAME: angular-demo-cloud-run # Default value
+  _GCPZONE: europe-west1
+options:
+  substitution_option: 'ALLOW_LOOSE'
+images:
+  - gcr.io/$PROJECT_ID/${_APPNAME}
